@@ -45,7 +45,7 @@ export default function DesempenoAlumno({ volver }) {
           )}`
         ),
       ]);
-      const [det, sum, resHist] = await Promise.all([
+      const [sum, resHist] = await Promise.all([
         detRes.json(),
         sumRes.json(),
         resHistRes.json(),
