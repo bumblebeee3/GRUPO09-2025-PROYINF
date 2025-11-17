@@ -50,7 +50,6 @@ export default function DesempenoAlumno({ volver }) {
         sumRes.json(),
         resHistRes.json(),
       ]);
-      setEnsayos(det); // ver score %
       setSummary(sum); // resumen por asignatura / global
       setResultsHist(resHist); // historial con correct/total
     } catch (e) {
