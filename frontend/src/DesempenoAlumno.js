@@ -3,7 +3,6 @@ import "./DesempenoAlumno.css";
 
 export default function DesempenoAlumno({ volver }) {
   const [email, setEmail] = useState("");
-  const [ensayos, setEnsayos] = useState([]);
   const [resultsHist, setResultsHist] = useState([]);
 
   const [suggestions, setSuggestions] = useState([]);
