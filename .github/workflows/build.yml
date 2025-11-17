@@ -1,0 +1,39 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Setup Node (para frontend y backend)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # Instalar dependencias si existen package.json
+      - name: Install dependencies (frontend + backend)
+        run: |
+          if [ -f frontend/package.json ]; then cd frontend && npm install && cd ..; fi
+          if [ -f backend/package.json ]; then cd backend && npm install && cd ..; fi
+
+      # Optional: build frontend (si tienes build)
+      - name: Build frontend
+        run: |
+          if [ -f frontend/package.json ]; then cd frontend && npm run build --if-present && cd ..; fi
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
