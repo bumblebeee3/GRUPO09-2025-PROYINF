@@ -1,5 +1,6 @@
 // frontend/src/AlumnosPage.js
 import { useState } from "react";
+import PropTypes from "prop-types";
 import "./App.css";
 
 export default function AlumnosPage({ volver }) {
@@ -120,3 +121,7 @@ export default function AlumnosPage({ volver }) {
     </div>
   );
 }
+
+AlumnosPage.propTypes = {
+  volver: PropTypes.func.isRequired,
+};
