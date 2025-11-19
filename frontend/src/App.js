@@ -9,34 +9,55 @@ import "./App.css";
 import ResultadosGraficos from "./ResultadosGraficos";
 import InternalClassroom from "./InternalClassroom";
 
-
 function App() {
   const [role, setRole] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
   const [user, setUser] = useState(null);
-  const [pagina, setPagina] = useState("inicio"); // controla la página
+  const [pagina, setPagina] = useState("inicio");
+
+  // función auxiliar para eliminar duplicación
+  const volverInicio = () => setPagina("inicio");
+
+  // navegación agrupada para reducir condiciones repetidas
+  const paginaComponents = {
+    alumnos: (
+      <AlumnosPage
+        volver={volverInicio}
+        verLista={() => setPagina("listaAlumnos")}
+        verDesempeno={() => setPagina("desempeno")}
+      />
+    ),
+    banco: <BancoPreguntas volver={volverInicio} />,
+    "students-list": <StudentsList volver={() => setPagina("alumnos")} />,
+    ensayo: <EnsayosAlumno user={user} volver={volverInicio} />,
+    progreso: <ProgresoAlumno user={user} volver={volverInicio} />,
+    desempeno: <DesempenoAlumno volver={volverInicio} />,
+    graficos: <ResultadosGraficos user={user} volver={volverInicio} />,
+    internalClassroom: (
+      <InternalClassroom user={user} volver={volverInicio} />
+    ),
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isRegister
-      ? "http://localhost:5000/register"
-      : "http://localhost:5000/login";
 
-    const body = isRegister
-      ? { email, password, role }
-      : { email, password, role };
     if (!role) {
       alert("Selecciona si eres profesor o alumno antes de entrar");
       return;
     }
 
-    // validacion correo con @
     if (!email || !email.includes("@")) {
       alert("Ingresa un correo válido (debe contener @).");
       return;
     }
+
+    const url = isRegister
+      ? "http://localhost:5000/register"
+      : "http://localhost:5000/login";
+
+    const body = { email, password, role };
 
     const res = await fetch(url, {
       method: "POST",
@@ -59,144 +80,79 @@ function App() {
     setPagina("inicio");
   };
 
-  // Control de páginas según estado
-  if (pagina === "alumnos")
-    return (
-      <AlumnosPage
-        volver={() => setPagina("inicio")}
-        verLista={() => setPagina("listaAlumnos")}
-        verDesempeno={() => setPagina("desempeno")}
-      />
-    );
-
-  if (pagina === "banco") {
-    return <BancoPreguntas volver={() => setPagina("inicio")} />;
-  }
-  if (pagina === "students-list") {
-    return <StudentsList volver={() => setPagina("alumnos")} />;
-  }
-  if (pagina === "ensayo") {
-    return <EnsayosAlumno user={user} volver={() => setPagina("inicio")} />;
-  }
-  if (pagina === "progreso") {
-    return <ProgresoAlumno user={user} volver={() => setPagina("inicio")} />;
-  }
-  if (pagina === "desempeno"){
-    return <DesempenoAlumno volver={() => setPagina("inicio")} />;
+  // si existe un componente para la página, lo devolvemos
+  if (paginaComponents[pagina]) {
+    return paginaComponents[pagina];
   }
 
-  if (pagina === "graficos") {
-    return <ResultadosGraficos user={user} volver={() => setPagina("inicio")} />;
-  }
-  if (pagina === "internalClassroom") {
-  return <InternalClassroom user={user} volver={() => setPagina("inicio")} />;
-  }
+  // dashboards
   if (user) {
-    if (user.role === "profesor") {
-      return (
-        <div className="dashboard-container">
-          <h1 className="dashboard-titulo">Panel del Profesor</h1>
-          <p className="dashboard-subtitulo">
-            Bienvenido, {user.email || "usuario"}.
-          </p>
+    const isProfesor = user.role === "profesor";
 
-          <div className="dashboard-botones">
-            <button
-              className="dashboard-boton"
-              onClick={() => setPagina("banco")}
-            >
-              Banco de Preguntas
-            </button>
+    return (
+      <div className="dashboard-container">
+        <h1 className="dashboard-titulo">
+          {isProfesor ? "Panel del Profesor" : "Panel del Alumno"}
+        </h1>
 
-            <button
-              className="dashboard-boton"
-              onClick={() => setPagina("alumnos")}
-            >
-              Alumnos
-            </button>
+        <p className="dashboard-subtitulo">
+          Bienvenido, {user.email || "usuario"}.
+        </p>
 
-            <button
-              className="dashboard-boton"
-              onClick={() => setPagina("desempeno")}
-            >
-              Desempeño de Alumnos
-            </button>
-
-            <button 
-              className="dashboard-boton"
-              onClick={() => setPagina("internalClassroom")}
+        <div className="dashboard-botones">
+          {isProfesor ? (
+            <>
+              <button className="dashboard-boton" onClick={() => setPagina("banco")}>
+                Banco de Preguntas
+              </button>
+              <button className="dashboard-boton" onClick={() => setPagina("alumnos")}>
+                Alumnos
+              </button>
+              <button className="dashboard-boton" onClick={() => setPagina("desempeno")}>
+                Desempeño de Alumnos
+              </button>
+              <button
+                className="dashboard-boton"
+                onClick={() => setPagina("internalClassroom")}
               >
-              Simular Classroom
-
-            </button>
-
-          </div>
-
-          <button className="logout-boton" onClick={logout}>
-            Cerrar sesión
-          </button>
+                Simular Classroom
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="dashboard-boton" onClick={() => setPagina("ensayo")}>
+                Ensayos
+              </button>
+              <button className="dashboard-boton" onClick={() => setPagina("progreso")}>
+                Progreso
+              </button>
+              <button className="dashboard-boton" onClick={() => setPagina("graficos")}>
+                Mis gráficos
+              </button>
+            </>
+          )}
         </div>
-      );
-    } else {
-      return (
-        <div className="dashboard-container">
-          <h1 className="dashboard-titulo">Panel del Alumno</h1>
-          <p className="dashboard-subtitulo">
-            Bienvenido, {user.email || "usuario"}.
-          </p>
-          <div className="dashboard-botones">
-            <button
-              className="dashboard-boton"
-              onClick={() => setPagina("ensayo")}
-            >
-              Ensayos
-            </button>
 
-            <button
-              className="dashboard-boton"
-              onClick={() => setPagina("progreso")}
-            >
-              Progreso
-            </button>
-
-            <button
-              className="dashboard-boton"
-              onClick={() => setPagina("graficos")}
-            >
-              Mis gráficos
-            </button>
-          </div>
-          
-          <button className="logout-boton" onClick={logout}>
-            Cerrar sesión
-          </button>
-        </div>
-      );
-    }
+        <button className="logout-boton" onClick={logout}>
+          Cerrar sesión
+        </button>
+      </div>
+    );
   }
 
+  // Pantalla de inicio
   return (
-    // Pantalla de inicio (selección de rol y login/registro)
     <div style={{ padding: 20 }}>
       {!role ? (
         <div className="inicio-container">
           <h1 className="inicio-titulo">Bienvenido a la plataforma PAES</h1>
-          <p className="inicio-subtitulo">
-            Selecciona tu tipo de usuario para continuar:
-          </p>
+          <p className="inicio-subtitulo">Selecciona tu tipo de usuario para continuar:</p>
 
           <div className="inicio-botones">
-            <button
-              className="boton-seleccion profesor"
-              onClick={() => setRole("profesor")}
-            >
+            <button className="boton-seleccion profesor" onClick={() => setRole("profesor")}>
               Profesor
             </button>
-
-            <button
-              className="boton-seleccion alumno"
-              onClick={() => setRole("alumno")}
-            >
+            <button className="boton-seleccion alumno" onClick={() => setRole("alumno")}>
               Alumno
             </button>
           </div>
@@ -234,10 +190,7 @@ function App() {
             {isRegister ? "Registrarse" : "Entrar"}
           </button>
 
-          <p
-            className="login-toggle"
-            onClick={() => setIsRegister(!isRegister)}
-          >
+          <p className="login-toggle" onClick={() => setIsRegister(!isRegister)}>
             {isRegister ? "Ya tengo cuenta" : "Crear nueva cuenta"}
           </p>
 
