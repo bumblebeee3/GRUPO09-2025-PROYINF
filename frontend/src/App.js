@@ -190,9 +190,13 @@ function App() {
             {isRegister ? "Registrarse" : "Entrar"}
           </button>
 
-          <p className="login-toggle" onClick={() => setIsRegister(!isRegister)}>
+          <button
+            type="button"
+            className="login-toggle"
+            onClick={() => setIsRegister(!isRegister)}
+          >
             {isRegister ? "Ya tengo cuenta" : "Crear nueva cuenta"}
-          </p>
+          </button>
 
           <button
             type="button"
